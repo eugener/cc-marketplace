@@ -14,6 +14,8 @@ allowed-tools:
   - WebFetch
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
+  - mcp__plugin_context7_context7__resolve-library-id
+  - mcp__plugin_context7_context7__query-docs
 ---
 
 Scaffold a new project. The project name is: $ARGUMENTS
@@ -21,10 +23,10 @@ Scaffold a new project. The project name is: $ARGUMENTS
 ## Step 1: Detect Environment
 
 Run in parallel to discover available tools:
-- `brew list --formula -1` and `brew list --cask -1`
 - `which rustc cargo go deno zig javac python3 dotnet swift kotlin gradle mvn bun pnpm npm yarn`
 - `ls ~/.cargo/bin 2>/dev/null`
 - Check tool versions for detected tools
+- `git config init.defaultBranch` to detect preferred branch name
 
 Build an internal map of what's available. Do NOT print this to the user.
 
@@ -44,7 +46,7 @@ If $ARGUMENTS is empty, also ask for the project name.
 
 Based on the user's choices:
 
-1. If Context7 MCP tools are available (`resolve-library-id` + `query-docs`), use them to look up:
+1. If Context7 MCP tools are available (try both `mcp__context7__` and `mcp__plugin_context7_context7__` prefixes), use them to look up:
    - Current recommended project structure for the chosen language/framework
    - Latest linter/formatter config conventions
    - Recommended tsconfig/Cargo.toml/go.mod/build.zig settings
@@ -65,6 +67,7 @@ Create the project directory and files. Follow these principles:
   - Project structure overview
   - Key conventions for this stack
   - Keep it concise (under 50 lines)
+- **.editorconfig** with standard settings for the language (indent style/size, charset, trailing whitespace, final newline)
 - **.gitignore** appropriate for the language (use gitignore.io or known good defaults)
 - **Source files** with a minimal working example (hello world / health endpoint / empty lib with one test)
 
@@ -72,7 +75,7 @@ Create the project directory and files. Follow these principles:
 Use the native init tool when available:
 - Rust: `cargo init` or `cargo new`
 - Go: `go mod init`
-- Node/TS: `bun init` (prefer bun if available, then pnpm, then npm). When using bun, scaffold pure TypeScript -- all source files must be `.ts`/`.tsx`, no `.js` files. Use bun's native TS support (no separate tsc build step needed for running).
+- Node/TS: `bun init` (prefer bun if available, then pnpm, then npm). When using bun, scaffold pure TypeScript -- all source files must be `.ts`/`.tsx`, no `.js` files. Bun runs `.ts` directly -- no tsc for building/running. Keep `tsc --noEmit` as a separate type-check command.
 - Deno: `deno init`
 - Java: `mvn archetype:generate` or `gradle init`
 - Zig: `zig init`
@@ -106,8 +109,8 @@ Then layer on additional config files.
 ## Step 5: Initialize and Validate
 
 Run sequentially:
-1. `git init` in the project directory
-2. Run the build command for the language
+1. `git init` in the project directory (uses user's configured default branch name)
+2. Run the build/check command for the language
 3. Run the test command
 4. Run the linter if configured
 5. Stage all files and create initial commit with message "init: scaffold <project-name>"

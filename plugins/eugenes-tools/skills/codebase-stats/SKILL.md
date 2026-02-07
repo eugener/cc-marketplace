@@ -10,63 +10,96 @@ allowed-tools:
 
 Generate a comprehensive codebase analytics report for the current project. All analysis is read-only.
 
+## Step 0: Detect Platform
+
+Run `uname -s` to detect OS. Use this throughout:
+- **macOS**: `date -v-Xw`, `stat -f`
+- **Linux**: `date -d 'X weeks ago'`, `stat -c`
+
 ## Step 1: Language Breakdown
 
-If `tokei` is available, run:
+If `tokei` is available (check with `which tokei`), run:
 ```
 tokei --sort code
 ```
 
-If not, fall back to `find` + `wc -l` grouped by extension.
+If not, fall back to counting with `find -print0 | xargs -0 wc -l` grouped by extension (use `-print0`/`xargs -0` for space-safe paths).
 
 Report: total lines, code lines, comment lines, blank lines, breakdown by language.
 
 ## Step 2: Project Structure
 
-- Count files by directory (top 2 levels): `find . -not -path './node_modules/*' -not -path './.git/*' -not -path './target/*' -not -path './dist/*' -not -path './vendor/*' -type f | awk -F/ '{print $2}' | sort | uniq -c | sort -rn`
-- Count source files vs test files (detect by `*test*`, `*spec*`, `*_test.*`, `test_*.*` patterns)
+Run in parallel:
+- Count files by top-level directory (exclude `.git`, `node_modules`, `target`, `dist`, `vendor`, `build`, `__pycache__`):
+  ```
+  find . -not -path './.git/*' -not -path './node_modules/*' -not -path './target/*' -not -path './dist/*' -not -path './vendor/*' -not -path './build/*' -not -path './__pycache__/*' -type f -print0 | xargs -0 -n1 dirname | awk -F/ '{print $2}' | sort | uniq -c | sort -rn
+  ```
+- Count source files vs test files (detect by `*.test.*`, `*.spec.*`, `*_test.*`, `test_*.*`, files under `test/` or `tests/` or `__tests__/` directories)
 - Compute test-to-source file ratio
 
-## Step 3: Churn Hotspots
+## Step 3: Monorepo Detection
+
+Check for multiple project manifests:
+```
+find . -maxdepth 3 -name 'package.json' -o -name 'Cargo.toml' -o -name 'go.mod' -o -name 'pom.xml' -o -name 'pyproject.toml' | grep -v node_modules | grep -v vendor | grep -v target
+```
+
+If more than one manifest found, report as monorepo with sub-project breakdown.
+
+## Step 4: Churn Hotspots
 
 Find the 15 most frequently changed files in the last 6 months:
 ```
-git log --since="6 months ago" --name-only --pretty=format: | sort | uniq -c | sort -rn | head -15
+git log --since="6 months ago" --name-only --pretty=format: | grep -v '^$' | sort | uniq -c | sort -rn | head -15
 ```
 
-These are complexity/maintenance hotspots. Flag files with 20+ changes as high-churn.
+Flag files with 20+ changes as high-churn.
 
-## Step 4: Recent Activity
+## Step 5: Recent Activity
 
-- Commits per week over last 4 weeks:
-  ```
-  for i in 0 1 2 3; do
-    start=$(date -v-$((i+1))w +%Y-%m-%d)
-    end=$(date -v-${i}w +%Y-%m-%d)
-    count=$(git log --after="$start" --before="$end" --oneline | wc -l | tr -d ' ')
-    echo "$start..$end: $count commits"
-  done
-  ```
+Commits per week over last 4 weeks (platform-aware):
+```
+# macOS
+for i in 0 1 2 3; do
+  start=$(date -v-$((i+1))w +%Y-%m-%d)
+  end=$(date -v-${i}w +%Y-%m-%d)
+  count=$(git log --after="$start" --before="$end" --oneline 2>/dev/null | wc -l | tr -d ' ')
+  echo "$start..$end: $count commits"
+done
+```
+```
+# Linux
+for i in 0 1 2 3; do
+  start=$(date -d "$((i+1)) weeks ago" +%Y-%m-%d)
+  end=$(date -d "$i weeks ago" +%Y-%m-%d)
+  count=$(git log --after="$start" --before="$end" --oneline 2>/dev/null | wc -l | tr -d ' ')
+  echo "$start..$end: $count commits"
+done
+```
+
+Use the correct variant based on Step 0 detection. Also run in parallel:
 - Top contributors (last 3 months): `git shortlog -sn --since="3 months ago"`
-- Files changed in last 7 days: `git diff --stat HEAD~$(git log --oneline --since="7 days ago" | wc -l | tr -d ' ') 2>/dev/null || git diff --stat @{7.days.ago} 2>/dev/null`
+- Recent file changes: `git diff --stat @{7.days.ago} 2>/dev/null || echo "No reflog data for 7 days ago"`
 
-## Step 5: Dependency Analysis
+## Step 6: Dependency Analysis
 
-Detect and count dependencies by project type:
+Detect and count dependencies by project type (check all that exist):
 
-- **package.json**: count `dependencies` + `devDependencies` keys
+- **package.json**: count `dependencies` + `devDependencies` keys via `jq` or manual count
 - **Cargo.toml**: count `[dependencies]` + `[dev-dependencies]` entries
 - **go.mod**: count `require` entries
 - **pom.xml**: count `<dependency>` entries
 - **pyproject.toml**: count dependencies entries
 
-Report total direct deps and dev deps separately.
+Report total direct deps and dev deps separately. For monorepos, report per sub-project.
 
-## Step 6: Code Quality Indicators
+## Step 7: Code Quality Indicators
 
-- Largest files by line count (top 10, excluding lock files and generated code):
+Run in parallel:
+
+- Largest source files by line count (top 10, excluding lock files and generated code):
   ```
-  find . -type f \( -name "*.ts" -o -name "*.rs" -o -name "*.go" -o -name "*.java" -o -name "*.py" -o -name "*.zig" \) -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*' | xargs wc -l 2>/dev/null | sort -rn | head -11
+  find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.rs" -o -name "*.go" -o -name "*.java" -o -name "*.py" -o -name "*.zig" -o -name "*.svelte" -o -name "*.vue" \) -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*' -print0 | xargs -0 wc -l 2>/dev/null | sort -rn | head -11
   ```
   Flag files over 500 lines as candidates for splitting.
 
@@ -74,7 +107,7 @@ Report total direct deps and dev deps separately.
 
 - Dead code indicators: search for `#[allow(dead_code)]`, `// eslint-disable`, `// nolint`, `@SuppressWarnings`
 
-## Step 7: Present Report
+## Step 8: Present Report
 
 Format as a dashboard:
 
@@ -85,6 +118,7 @@ Languages:        <tokei summary>
 Total Files:      X source / Y test (ratio: Z)
 Dependencies:     X direct / Y dev
 Repo Size:        X (git: Y)
+Monorepo:         Yes/No (N sub-projects)
 
 Activity (last 4 weeks):
   wk1: ██████ 12
