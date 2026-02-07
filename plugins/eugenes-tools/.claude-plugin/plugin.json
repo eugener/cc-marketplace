@@ -1,0 +1,8 @@
+{
+  "name": "eugenes-tools",
+  "description": "Developer productivity tools: Homebrew optimization and project scaffolding",
+  "version": "1.0.0",
+  "author": {
+    "name": "Eugene Ryzhikov"
+  }
+}

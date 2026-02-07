@@ -1,8 +1,0 @@
-{
-  "name": "project-scaffold",
-  "description": "Scaffold a new project with best-practice config, CI, and tooling for any language/framework",
-  "version": "1.0.0",
-  "author": {
-    "name": "Eugene Ryzhikov"
-  }
-}

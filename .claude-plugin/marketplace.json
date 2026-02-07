@@ -6,15 +6,9 @@
   },
   "plugins": [
     {
-      "name": "brew-optimize",
-      "source": "./plugins/brew-optimize",
-      "description": "Analyze and optimize Homebrew installations - find unused, outdated, and orphaned packages",
-      "version": "1.0.0"
-    },
-    {
-      "name": "project-scaffold",
-      "source": "./plugins/project-scaffold",
-      "description": "Scaffold a new project with best-practice config, CI, and tooling for any language/framework",
+      "name": "eugenes-tools",
+      "source": "./plugins/eugenes-tools",
+      "description": "Developer productivity tools: Homebrew optimization and project scaffolding",
       "version": "1.0.0"
     }
   ]
