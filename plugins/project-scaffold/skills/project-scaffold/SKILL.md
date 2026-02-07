@@ -12,6 +12,8 @@ allowed-tools:
   - Grep
   - WebSearch
   - WebFetch
+  - mcp__context7__resolve-library-id
+  - mcp__context7__query-docs
 ---
 
 Scaffold a new project. The project name is: $ARGUMENTS
@@ -42,9 +44,14 @@ If $ARGUMENTS is empty, also ask for the project name.
 
 Based on the user's choices:
 
-1. Use web search for "<language> project setup best practices" with current year
+1. If Context7 MCP tools are available (`resolve-library-id` + `query-docs`), use them to look up:
+   - Current recommended project structure for the chosen language/framework
+   - Latest linter/formatter config conventions
+   - Recommended tsconfig/Cargo.toml/go.mod/build.zig settings
 
-2. Check the latest stable version of key dependencies the project will need
+2. Fall back to `WebSearch` for "<language> project setup best practices" with current year
+
+3. Check the latest stable version of key dependencies the project will need
 
 Goal: generate configs that reflect current ecosystem conventions, NOT stale defaults.
 
