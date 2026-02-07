@@ -8,6 +8,8 @@ Claude Code plugin marketplace.
 |---|---|
 | `eugenes-tools:brew-optimize` | Analyze and optimize Homebrew installations |
 | `eugenes-tools:project-scaffold` | Scaffold projects with best-practice config and tooling |
+| `eugenes-tools:repo-health` | Audit git repo hygiene: large blobs, secrets, stale branches, gitignore |
+| `eugenes-tools:codebase-stats` | Project analytics: LOC, churn hotspots, deps, code quality indicators |
 
 ## Install
 

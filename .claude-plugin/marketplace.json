@@ -8,8 +8,8 @@
     {
       "name": "eugenes-tools",
       "source": "./plugins/eugenes-tools",
-      "description": "Developer productivity tools: Homebrew optimization and project scaffolding",
-      "version": "1.0.0"
+      "description": "Developer productivity tools: brew optimization, project scaffolding, repo health, codebase stats",
+      "version": "1.1.0"
     }
   ]
 }
