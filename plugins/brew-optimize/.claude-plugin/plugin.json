@@ -1,0 +1,8 @@
+{
+  "name": "brew-optimize",
+  "description": "Analyze and optimize Homebrew installations - find unused, outdated, and orphaned packages",
+  "version": "1.0.0",
+  "author": {
+    "name": "Eugene Ryzhikov"
+  }
+}
