@@ -50,6 +50,21 @@ Git repository hygiene audit. Scans for large blobs in history, tracked binary f
 
 ---
 
+### `eugenes-tools:things`
+
+Manage Things 3 to-dos, projects, and lists. List tasks from any built-in list (Inbox, Today, Anytime, Upcoming, Someday, Logbook), create to-dos and projects with scheduling, complete/cancel/delete tasks, search, manage tags, and move items between projects. Uses AppleScript for reads and the Things URL scheme for creation.
+
+**Platform:** macOS only (requires Things 3)
+
+**Example:**
+```
+/eugenes-tools:things show me today's tasks
+/eugenes-tools:things add "Buy groceries" to Inbox for tomorrow
+/eugenes-tools:things complete "Buy groceries"
+```
+
+---
+
 ### `eugenes-tools:codebase-stats`
 
 Read-only project analytics dashboard. Uses `tokei` for language breakdown (with fallback), detects monorepos, identifies churn hotspots from git history, tracks weekly commit activity, counts dependencies by manifest type, and flags code quality indicators (large files, TODOs, lint suppressions).
