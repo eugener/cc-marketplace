@@ -1,3 +1,4 @@
+
 ---
 description: Manage Things 3 to-dos, projects, and lists via AppleScript and URL scheme (macOS only)
 user-invocable: true
@@ -138,7 +139,8 @@ osascript -e '
 tell application "Things3"
   set matches to (every to do whose name is "TODO_NAME")
   if (count of matches) > 0 then
-    delete item 1 of matches
+    set aToDo to item 1 of matches
+    move aToDo to list "Trash"
     return "Deleted: TODO_NAME"
   else
     return "No to-do found with that name"
@@ -148,7 +150,64 @@ end tell'
 
 Always ask for confirmation before deleting.
 
-## Step 9: Search To-Dos by Name
+## Step 9: Update a To-Do
+
+Find a to-do by name, then modify its properties via AppleScript assignment. If multiple matches, list them and ask the user which one to update.
+
+```bash
+osascript -e '
+tell application "Things3"
+  set matches to (every to do whose name is "TODO_NAME" and status is open)
+  if (count of matches) = 0 then
+    return "No open to-do found with that name"
+  end if
+  set aToDo to item 1 of matches
+  -- Apply only the properties the user wants to change:
+  set name of aToDo to "NEW_TITLE"
+  set notes of aToDo to "NEW_NOTES"
+  set due date of aToDo to date "YYYY-MM-DD"
+  set tag names of aToDo to "tag1, tag2"
+  return "Updated: " & name of aToDo
+end tell'
+```
+
+Available property changes (include only the lines the user requests):
+- Title: `set name of aToDo to "new title"`
+- Notes: `set notes of aToDo to "new notes"`
+- Due date: `set due date of aToDo to date "YYYY-MM-DD"`
+- Tags: `set tag names of aToDo to "tag1, tag2"`
+- Clear a property: `set due date of aToDo to missing value` (works for notes, due date, tags)
+
+## Step 10: Reschedule a To-Do
+
+Move a to-do to a different scheduling list or date.
+
+```bash
+osascript -e '
+tell application "Things3"
+  set matches to (every to do whose name is "TODO_NAME" and status is open)
+  if (count of matches) = 0 then
+    return "No open to-do found with that name"
+  end if
+  set aToDo to item 1 of matches
+  -- Use ONE of the following depending on the target:
+  -- Today:
+  move aToDo to list "Today"
+  -- Someday:
+  move aToDo to list "Someday"
+  -- Anytime:
+  move aToDo to list "Anytime"
+  -- Specific date or tomorrow:
+  set activation date of aToDo to date "YYYY-MM-DD"
+  -- Evening (set activation date to today, then move to Evening):
+  move aToDo to list "Evening"
+  return "Rescheduled: " & name of aToDo
+end tell'
+```
+
+Pick only the relevant move/schedule line for the user's request. For "tomorrow", compute tomorrow's date and use `set activation date of aToDo to date "YYYY-MM-DD"`.
+
+## Step 11: Search To-Dos by Name
 
 ```bash
 osascript -e '
@@ -170,7 +229,7 @@ end tell'
 
 Format results as a markdown table: Name, Status, Project.
 
-## Step 10: List Projects
+## Step 12: List Projects
 
 ```bash
 osascript -e '
@@ -192,7 +251,7 @@ end tell'
 
 Format as markdown table: Project, Status, To-Do Count, Area.
 
-## Step 11: List Areas
+## Step 13: List Areas
 
 ```bash
 osascript -e '
@@ -205,7 +264,7 @@ tell application "Things3"
 end tell'
 ```
 
-## Step 12: List Tags
+## Step 14: List Tags
 
 ```bash
 osascript -e '
@@ -218,7 +277,7 @@ tell application "Things3"
 end tell'
 ```
 
-## Step 13: Move a To-Do to a Project
+## Step 15: Move a To-Do to a Project
 
 ```bash
 osascript -e '
@@ -234,7 +293,7 @@ tell application "Things3"
 end tell'
 ```
 
-## Step 14: Show a List in Things UI
+## Step 16: Show a List in Things UI
 
 ```bash
 osascript -e '
@@ -254,6 +313,54 @@ tell application "Things3"
   activate
   show first project whose name is "PROJECT_NAME"
 end tell'
+```
+
+## Step 17: Today Summary
+
+Query the Today list and display a compact markdown summary.
+
+```bash
+osascript -e '
+tell application "Things3"
+  set allToDos to to dos of list "Today"
+  set totalCount to count of allToDos
+  set completedCount to 0
+  set remainingItems to ""
+  set overdueItems to ""
+  set todayDate to current date
+  repeat with t in allToDos
+    if status of t is completed then
+      set completedCount to completedCount + 1
+    else
+      set taskName to name of t
+      set dueVal to ""
+      set tagVal to tag names of t
+      try
+        set dueVal to due date of t as string
+        if due date of t < todayDate then
+          set overdueItems to overdueItems & "- " & taskName & " (due: " & dueVal & ")" & linefeed
+        end if
+      end try
+      set remainingItems to remainingItems & "- " & taskName
+      if dueVal is not "" then set remainingItems to remainingItems & " | due: " & dueVal
+      if tagVal is not "" then set remainingItems to remainingItems & " | tags: " & tagVal
+      set remainingItems to remainingItems & linefeed
+    end if
+  end repeat
+  set remainingCount to totalCount - completedCount
+  return "TOTAL:" & totalCount & linefeed & "DONE:" & completedCount & linefeed & "REMAINING:" & remainingCount & linefeed & "---REMAINING---" & linefeed & remainingItems & "---OVERDUE---" & linefeed & overdueItems
+end tell'
+```
+
+Parse the output and format as:
+
+```
+### Today
+- Total: X | Done: Y | Remaining: Z
+#### Remaining
+<remaining items list>
+#### Overdue
+<overdue items or "None">
 ```
 
 ## Guidelines
