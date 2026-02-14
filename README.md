@@ -76,6 +76,18 @@ Read-only project analytics dashboard. Uses `tokei` for language breakdown (with
 /eugenes-tools:codebase-stats
 ```
 
+### `eugenes-tools:refactoring-ui`
+
+Reviews frontend UI code and produces actionable refactoring suggestions based on proven visual design principles from Refactoring UI. Audits hierarchy (font weight/color over size, label usage, button hierarchy), layout and spacing (consistent scale, ambiguous spacing, white space), typography (type scale, line length, line-height, letter-spacing, alignment), color (HSL palettes, shade scales, saturation at extremes, grey temperature, accessibility), depth (shadow elevation systems, light source consistency, two-part shadows), images (scaling, text-over-image contrast, user uploads), and finishing touches (accent borders, fewer borders, empty states, creative components). Groups findings by severity and provides exact code fixes matching the project's stack.
+
+**Example:**
+```
+/eugenes-tools:refactoring-ui src/components
+/eugenes-tools:refactoring-ui app/page.tsx
+```
+
+---
+
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI

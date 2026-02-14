@@ -8,8 +8,8 @@
     {
       "name": "eugenes-tools",
       "source": "./plugins/eugenes-tools",
-      "description": "Developer productivity tools: brew optimization, project scaffolding, repo health, codebase stats",
-      "version": "1.2.0"
+      "description": "Developer productivity tools: brew optimization, project scaffolding, repo health, codebase stats, Things 3 task management, UI review",
+      "version": "1.4.0"
     }
   ]
 }
