@@ -1,6 +1,5 @@
-
 ---
-description: Manage Things 3 to-dos, projects, and lists via AppleScript and URL scheme (macOS only)
+description: Manage Things 3 to-dos, projects, and lists via AppleScript and URL scheme (macOS only). Use this when the user mentions Things 3, task management, to-do lists, daily planning, or wants to create, complete, search, or organize tasks.
 user-invocable: true
 allowed-tools:
   - Bash

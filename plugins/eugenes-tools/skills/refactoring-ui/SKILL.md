@@ -1,5 +1,5 @@
 ---
-description: Review and refactor UI code using principles from Refactoring UI - hierarchy, spacing, typography, color, depth, and polish
+description: Review and refactor UI code using principles from Refactoring UI - hierarchy, spacing, typography, color, depth, and polish. Use this when the user asks for UI review, visual design feedback, CSS audit, frontend polish, or wants to improve the look and feel of their interface.
 user-invocable: true
 argument-hint: "[file-or-directory]"
 allowed-tools:
@@ -276,7 +276,23 @@ Check every component/page for hierarchy issues. Hierarchy is the single most ef
 - PRINCIPLE: Personality comes from font choice (serif = elegant, rounded sans = playful, neutral sans = plain), color (blue = safe, gold = sophisticated, pink = fun), border-radius (small = neutral, large = playful, none = formal), and language tone (formal vs casual). Mixing styles (rounded corners + angular elements) looks worse than committing to one
 - Flag inconsistent border-radius values or mixed font personalities
 
-## Step 9: Present Report
+## Step 9: Responsive Design Audit
+
+### 9a. Mobile-first approach
+- Check if styles are built mobile-first (min-width breakpoints) or desktop-first (max-width)
+- PRINCIPLE: Design the mobile layout first, then adapt for larger screens. You'll change less than you think going up in size
+
+### 9b. Proportional scaling issues
+- Check for elements that scale proportionally across breakpoints
+- PRINCIPLE: Large elements (headings, hero padding, images) should shrink faster than small elements (body text, button padding) at smaller breakpoints. The visual difference between large and small should decrease on mobile
+- Flag headings and padding that maintain the same ratio at all breakpoints
+
+### 9c. Fixed widths on mobile
+- Check for fixed pixel widths that could overflow on small screens
+- PRINCIPLE: Use max-width instead of width for elements that should shrink. Only force an element to shrink when the screen is smaller than the element's ideal size
+- Flag `width: Xpx` without corresponding responsive overrides
+
+## Step 10: Present Report
 
 Organize findings by priority:
 

@@ -1,5 +1,5 @@
 ---
-description: Audit git repository hygiene - large blobs, leaked secrets, stale branches, missing gitignore entries, and overall health
+description: Audit git repository hygiene - large blobs, leaked secrets, stale branches, missing gitignore entries, commit quality, and overall health. Use this when the user asks about repo cleanup, git health check, secret scanning, branch cleanup, or git hygiene.
 user-invocable: true
 allowed-tools:
   - Bash
@@ -10,6 +10,12 @@ allowed-tools:
 ---
 
 Run a comprehensive git repository health audit on the current repo. Present findings as a report with actionable fixes. Ask before making any changes.
+
+## Step 0: Detect Platform
+
+Run `uname -s` to detect OS. Use this throughout:
+- **macOS**: `stat -f "%Sa" -t "%Y-%m-%d"` for file timestamps, `date -v-Xm` for date math
+- **Linux**: `stat -c "%y"` for file timestamps, `date -d 'X months ago'` for date math
 
 ## Step 1: Basic Repo Info
 
@@ -36,7 +42,7 @@ Find binary files currently tracked that may belong in LFS or .gitignore:
 ```
 git ls-files | while read f; do
   case "$f" in
-    *.png|*.jpg|*.jpeg|*.gif|*.ico|*.svg|*.woff|*.woff2|*.ttf|*.eot|*.zip|*.tar|*.gz|*.jar|*.exe|*.dll|*.so|*.dylib|*.pdf)
+    *.png|*.jpg|*.jpeg|*.gif|*.ico|*.svg|*.woff|*.woff2|*.ttf|*.eot|*.zip|*.tar|*.gz|*.jar|*.exe|*.dll|*.so|*.dylib|*.pdf|*.mp4|*.mov|*.mp3|*.wav|*.sqlite|*.db|*.wasm|*.a|*.o|*.parquet)
       echo "$f ($(wc -c < "$f" | tr -d ' ') bytes)";;
   esac
 done
@@ -56,6 +62,10 @@ Search the working tree for potential secrets using patterns:
   - `github_pat_[a-zA-Z0-9_]+` (GitHub fine-grained PATs)
   - `npm_[a-zA-Z0-9]+` (npm tokens)
   - `xox[bpors]-[a-zA-Z0-9-]+` (Slack tokens)
+  - `sk_live_[a-zA-Z0-9]+` (Stripe secret keys)
+  - `rk_live_[a-zA-Z0-9]+` (Stripe restricted keys)
+  - `AIza[0-9A-Za-z_-]{35}` (Google API keys)
+  - `ya29\.[0-9A-Za-z_-]+` (Google OAuth tokens)
   - `-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----`
   - `password\s*=\s*['"][^'"]+['"]` (hardcoded passwords)
   - `GITHUB_TOKEN\s*=\s*['"][^'"]+['"]`
@@ -112,19 +122,26 @@ Analyze last 50 commits:
 - `git stash list` for forgotten stashes
 - Flag stashes older than 1 month
 
-## Step 10: Present Report
+## Step 10: Git Config and Attributes
+
+Check for common configuration issues:
+- `git config --get core.autocrlf` -- flag if unset on cross-platform repos (has both Windows and Unix contributors)
+- Check if `.gitattributes` exists. If the repo has binary files that should use LFS, flag missing `.gitattributes` with LFS tracking rules
+- `git config --get pull.rebase` -- note whether rebase or merge is configured for pulls
+
+## Step 11: Present Report
 
 Organize into sections with severity:
 
 1. **Critical** - leaked secrets, unresolved merge conflicts, large binaries in history
 2. **Warning** - stale branches, missing gitignore entries, old stashes, tracked binaries
-3. **Info** - repo size, commit stats, branch summary
+3. **Info** - repo size, commit stats, branch summary, git config notes
 
 For each finding, provide the exact fix command.
 
 End with a summary of recommended actions, grouped as:
 - **Immediate**: security-related fixes, conflict resolution
 - **Cleanup**: branch/stash cleanup commands
-- **Improvement**: gitignore/commit hygiene suggestions, LFS migration
+- **Improvement**: gitignore/commit hygiene suggestions, LFS migration, gitattributes setup
 
 Ask which actions the user wants to take.

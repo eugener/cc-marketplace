@@ -1,5 +1,5 @@
 ---
-description: Project analytics - lines of code, language breakdown, churn hotspots, test coverage ratio, and dependency count
+description: Project analytics - lines of code, language breakdown, churn hotspots, code ownership, test coverage ratio, and dependency count. Use this when the user asks for codebase overview, project stats, code metrics, technical debt indicators, or wants to understand a repo's size and activity.
 user-invocable: true
 allowed-tools:
   - Bash
@@ -41,7 +41,7 @@ Run in parallel:
 
 Check for multiple project manifests:
 ```
-find . -maxdepth 3 -name 'package.json' -o -name 'Cargo.toml' -o -name 'go.mod' -o -name 'pom.xml' -o -name 'pyproject.toml' | grep -v node_modules | grep -v vendor | grep -v target
+find . -maxdepth 3 -name 'package.json' -o -name 'Cargo.toml' -o -name 'go.mod' -o -name 'pom.xml' -o -name 'build.gradle' -o -name 'build.gradle.kts' -o -name 'pyproject.toml' -o -name 'Package.swift' -o -name 'build.zig' | grep -v node_modules | grep -v vendor | grep -v target
 ```
 
 If more than one manifest found, report as monorepo with sub-project breakdown.
@@ -81,7 +81,23 @@ Use the correct variant based on Step 0 detection. Also run in parallel:
 - Top contributors (last 3 months): `git shortlog -sn --since="3 months ago"`
 - Recent file changes: `git diff --stat @{7.days.ago} 2>/dev/null || echo "No reflog data for 7 days ago"`
 
-## Step 6: Dependency Analysis
+## Step 6: Code Ownership
+
+Identify who owns what using git blame statistics for the top churn hotspots from Step 4:
+```
+git log --since="6 months ago" --format="%aN" -- <file> | sort | uniq -c | sort -rn | head -5
+```
+
+Run this for the top 5 churn hotspots. Report primary author and contributor count per file.
+
+Also compute overall contributor distribution:
+```
+git shortlog -sn --all | head -10
+```
+
+This helps identify bus-factor risks (files with a single contributor) and team knowledge distribution.
+
+## Step 7: Dependency Analysis
 
 Detect and count dependencies by project type (check all that exist):
 
@@ -89,17 +105,19 @@ Detect and count dependencies by project type (check all that exist):
 - **Cargo.toml**: count `[dependencies]` + `[dev-dependencies]` entries
 - **go.mod**: count `require` entries
 - **pom.xml**: count `<dependency>` entries
+- **build.gradle / build.gradle.kts**: count `implementation`, `api`, `testImplementation` entries
 - **pyproject.toml**: count dependencies entries
+- **Package.swift**: count `.package(` entries in dependencies array
 
 Report total direct deps and dev deps separately. For monorepos, report per sub-project.
 
-## Step 7: Code Quality Indicators
+## Step 8: Code Quality Indicators
 
 Run in parallel:
 
 - Largest source files by line count (top 10, excluding lock files and generated code):
   ```
-  find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.rs" -o -name "*.go" -o -name "*.java" -o -name "*.py" -o -name "*.zig" -o -name "*.svelte" -o -name "*.vue" \) -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*' -print0 | xargs -0 wc -l 2>/dev/null | sort -rn | head -11
+  find . -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.rs" -o -name "*.go" -o -name "*.java" -o -name "*.py" -o -name "*.zig" -o -name "*.svelte" -o -name "*.vue" -o -name "*.swift" -o -name "*.kt" -o -name "*.c" -o -name "*.cpp" -o -name "*.h" -o -name "*.rb" -o -name "*.cs" -o -name "*.scala" \) -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*' -print0 | xargs -0 wc -l 2>/dev/null | sort -rn | head -11
   ```
   Flag files over 500 lines as candidates for splitting.
 
@@ -107,7 +125,7 @@ Run in parallel:
 
 - Dead code indicators: search for `#[allow(dead_code)]`, `// eslint-disable`, `// nolint`, `@SuppressWarnings`
 
-## Step 8: Present Report
+## Step 9: Present Report
 
 Format as a dashboard:
 
@@ -128,6 +146,10 @@ Activity (last 4 weeks):
 Churn Hotspots:
   1. src/foo.ts (34 changes)
   2. ...
+
+Code Ownership:
+  Top contributors: ...
+  Bus-factor risks: <files with single contributor>
 
 Largest Files:
   1. src/bar.ts (820 lines)

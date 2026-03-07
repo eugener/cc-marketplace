@@ -1,5 +1,5 @@
 ---
-description: Scaffold a new project with best-practice config, CI, and tooling for any language/framework
+description: Scaffold a new project with best-practice config, CI, and tooling for any language/framework. Use this when the user wants to create a new project, start a new app, initialize a codebase, or bootstrap a repo from scratch.
 user-invocable: true
 argument-hint: "[project-name]"
 allowed-tools:

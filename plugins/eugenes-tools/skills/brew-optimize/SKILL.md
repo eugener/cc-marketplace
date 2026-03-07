@@ -1,5 +1,5 @@
 ---
-description: Analyze and optimize Homebrew installations - find unused, outdated, and orphaned packages (macOS only)
+description: Analyze and optimize Homebrew installations - find unused, outdated, and orphaned packages, audit taps and services, reclaim disk space (macOS only). Use this when the user mentions brew cleanup, homebrew audit, freeing disk space from brew, or wants to know what brew packages they can remove.
 user-invocable: true
 allowed-tools:
   - Bash
@@ -7,6 +7,20 @@ allowed-tools:
 ---
 
 Perform a comprehensive Homebrew optimization audit. Run all analysis steps, then present a summary with actionable recommendations. Ask before making any changes.
+
+## Step 0: Verify Platform
+
+Confirm this is macOS:
+```
+uname -s
+```
+If not `Darwin`, tell the user this skill requires macOS and stop.
+
+Also verify Homebrew is installed:
+```
+which brew
+```
+If not found, suggest installing from https://brew.sh and stop.
 
 ## Step 1: Gather Data
 
@@ -54,7 +68,27 @@ Check for multiple versions of the same tool:
 - For each group, check which versions have dependents via `brew uses --installed`
 - Flag versions with no dependents as removal candidates
 
-## Step 6: Present Report
+## Step 6: Tap and Services Audit
+
+### Taps
+List all taps and check which ones have installed formulae:
+```
+brew tap
+```
+For each tap, count installed formulae from it:
+```
+brew list --formula | while read f; do brew info --json=v2 "$f" 2>/dev/null; done | grep -o '"tap":"[^"]*"' | sort | uniq -c | sort -rn
+```
+If a tap has zero installed formulae, flag it as a removal candidate (`brew untap <tap>`).
+
+### Services
+If `brew services` is available, check for registered services:
+```
+brew services list 2>/dev/null
+```
+Flag services with status `stopped` or `error` -- these are registered but not running. The user may want to either start them or uninstall them.
+
+## Step 7: Present Report
 
 Organize findings into these categories:
 
@@ -64,7 +98,9 @@ Organize findings into these categories:
 4. **Outdated (in use)** - packages that are outdated but actively depended upon
 5. **Stale Casks** - cask apps not recently opened
 6. **Cleanup Savings** - space reclaimable via `brew cleanup`
-7. **Doctor Warnings** - issues reported by `brew doctor` (if any)
+7. **Unused Taps** - taps with no installed formulae from them
+8. **Stale Services** - brew services registered but stopped or errored
+9. **Doctor Warnings** - issues reported by `brew doctor` (if any)
 
 For each category, show a markdown table with package name, relevant details (last access, version, size, dependents).
 
@@ -72,5 +108,6 @@ End with concrete commands the user can copy-paste:
 - `brew uninstall ...` for removals
 - `brew upgrade ...` for updates
 - `brew cleanup` for cache cleanup
+- `brew untap ...` for unused taps
 
 Ask the user which actions they want to take before executing anything.
