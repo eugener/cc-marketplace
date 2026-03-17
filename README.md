@@ -39,9 +39,9 @@ Scaffolds a new project from scratch. Detects installed toolchains, asks for lan
 
 ### `eugenes-tools:repo-health`
 
-Git repository hygiene audit. Scans for large blobs in history, tracked binary files, leaked secrets (AWS, GitHub, Anthropic, Slack, npm tokens, private keys), unresolved merge conflict markers, stale/gone branches, missing .gitignore entries, commit message hygiene, and forgotten stashes. Groups findings by severity (critical/warning/info) with exact fix commands.
+Git repository hygiene audit. Scans for large blobs in history, tracked binary files, leaked secrets (AWS, GitHub, Anthropic, Slack, npm tokens, private keys), unresolved merge conflict markers, stale/gone branches, missing .gitignore entries, commit message hygiene, and forgotten stashes. Groups findings by severity (critical/warning/info) with exact fix commands. Runs in a forked context to keep heavy output out of the main conversation.
 
-**Platform:** macOS and Linux
+**Platform:** macOS and Linux | **Context:** fork
 
 **Example:**
 ```
@@ -67,20 +67,22 @@ Manage Things 3 to-dos, projects, and lists. List tasks from any built-in list (
 
 ### `eugenes-tools:codebase-stats`
 
-Read-only project analytics dashboard. Uses `tokei` for language breakdown (with fallback), detects monorepos, identifies churn hotspots from git history, tracks weekly commit activity, counts dependencies by manifest type, and flags code quality indicators (large files, TODOs, lint suppressions).
+Read-only project analytics dashboard. Uses `tokei` for language breakdown (with fallback), detects monorepos, identifies churn hotspots from git history, tracks weekly commit activity, counts dependencies by manifest type, and flags code quality indicators (large files, TODOs, lint suppressions). Runs in a forked context to keep heavy output out of the main conversation.
 
-**Platform:** macOS and Linux
+**Platform:** macOS and Linux | **Context:** fork
 
 **Example:**
 ```
 /eugenes-tools:codebase-stats
 ```
 
+---
+
 ### `eugenes-tools:github-activity`
 
-GitHub activity dashboard showing what other people are doing with your repos. Fetches stars, forks, clones, views, open issues, and PRs across all your repositories using the `gh` CLI. Highlights repos gaining traction, issues needing attention, and discovery opportunities (high traffic, low stars).
+GitHub activity dashboard showing what other people are doing with your repos. Fetches stars, forks, clones, views, open issues, and PRs across all your repositories using the `gh` CLI. Highlights repos gaining traction, issues needing attention, and discovery opportunities (high traffic, low stars). Runs in a forked context to keep heavy output out of the main conversation.
 
-**Requires:** `gh` CLI authenticated (`gh auth login`)
+**Requires:** `gh` CLI authenticated (`gh auth login`) | **Context:** fork
 
 **Example:**
 ```
@@ -105,7 +107,7 @@ Reviews frontend UI code and produces actionable refactoring suggestions based o
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
-- Skills use standard CLI tools (`git`, `brew`, `tokei`, `du`, `stat`). Missing tools are detected and skipped or substituted.
+- Skills use standard CLI tools (`git`, `gh`, `brew`, `tokei`, `du`, `stat`). Missing tools are detected and skipped or substituted.
 - Optional: [Context7](https://context7.com) MCP server (improves `project-scaffold` research)
 
 ## Development
