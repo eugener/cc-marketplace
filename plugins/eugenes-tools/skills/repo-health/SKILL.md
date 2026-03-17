@@ -1,6 +1,7 @@
 ---
 description: Audit git repository hygiene - large blobs, leaked secrets, stale branches, missing gitignore entries, commit quality, and overall health. Use this when the user asks about repo cleanup, git health check, secret scanning, branch cleanup, or git hygiene.
 user-invocable: true
+context: fork
 allowed-tools:
   - Bash
   - Grep

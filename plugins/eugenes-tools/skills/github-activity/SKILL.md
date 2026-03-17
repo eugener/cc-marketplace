@@ -2,6 +2,7 @@
 description: GitHub activity dashboard - stars, forks, clones, views, issues, and PRs from other people across your repos. Use this whenever the user asks about GitHub activity, repo popularity, who starred or forked, traffic, external contributions, community engagement, what's happening on their repos, whether anyone is using their projects, repo stats, or GitHub notifications. Also trigger when the user mentions checking on their open source projects or wants a summary of external interest.
 user-invocable: true
 argument-hint: "[username-or-org]"
+context: fork
 allowed-tools:
   - Bash
   - AskUserQuestion

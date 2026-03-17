@@ -1,6 +1,7 @@
 ---
 description: Project analytics - lines of code, language breakdown, churn hotspots, code ownership, test coverage ratio, and dependency count. Use this when the user asks for codebase overview, project stats, code metrics, technical debt indicators, or wants to understand a repo's size and activity.
 user-invocable: true
+context: fork
 allowed-tools:
   - Bash
   - Grep
