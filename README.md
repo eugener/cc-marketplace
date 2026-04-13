@@ -104,6 +104,18 @@ Reviews frontend UI code and produces actionable refactoring suggestions based o
 
 ---
 
+### `eugenes-tools:grill-me`
+
+Relentless but collaborative interviewer for any plan or design — technical architecture, business strategy, product roadmap, hiring plan, or anything with decisions to make. Walks through every branch of the decision tree, surfacing assumptions, dependencies, gaps, trade-offs, edge cases, and failure modes. Provides its own recommended answers (researching the codebase, web, or domain rather than asking you), then pushes until each branch is resolved. Ends with a concrete summary of all decisions.
+
+**Example:**
+```
+/eugenes-tools:grill-me my migration plan
+/eugenes-tools:grill-me
+```
+
+---
+
 ## Requirements
 
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
